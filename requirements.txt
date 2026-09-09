@@ -1,0 +1,6 @@
+langgraph
+groq
+psycopg2-binary
+streamlit
+pydantic
+python-dotenv
