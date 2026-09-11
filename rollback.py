@@ -1,10 +1,7 @@
-import psycopg2
+from db import get_prod
 
 def get_conn(port, db):
-    return psycopg2.connect(
-        host="localhost", port=port,
-        dbname=db, user="postgres", password="postgres"
-    )
+    return get_prod()
 
 def backup():
     conn = get_conn(5433, "prod")

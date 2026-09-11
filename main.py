@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from graph import app as graph_app
 from rollback import backup, restore
-import psycopg2
+from db import get_prod
 
 app = FastAPI(title="DriftGuard AI")
 
@@ -21,10 +21,7 @@ class ApproveIn(BaseModel):
 def approve(body: ApproveIn):
     backup()
     try:
-        conn = psycopg2.connect(
-            host="localhost", port=5433,
-            dbname="prod", user="postgres", password="postgres"
-        )
+        conn = get_prod()
         cur = conn.cursor()
         cur.execute(body.sql)
         conn.commit()
