@@ -1,10 +1,7 @@
-import psycopg2
+from db import get_prod, get_sandbox
 
 def run_test(sql, port, db):
-    conn = psycopg2.connect(
-        host="localhost", port=port,
-        dbname=db, user="postgres", password="postgres"
-    )
+    conn = get_prod() if db == "prod" else get_sandbox()
     cur = conn.cursor()
     try:
         cur.execute(sql)
