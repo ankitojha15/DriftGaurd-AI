@@ -1,10 +1,9 @@
-import psycopg2
+from db import get_prod
 
-conn = psycopg2.connect(
-    host="localhost", port=5433,
-    dbname="prod", user="postgres", password="postgres"
-)
+conn = get_prod()
 cur = conn.cursor()
+cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='orders' ORDER BY 1;")
+print("before:", cur.fetchall())
 cur.execute("ALTER TABLE orders RENAME COLUMN cust_id TO customer_id;")
 conn.commit()
 conn.close()
