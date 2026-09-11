@@ -16,15 +16,11 @@ def get_columns(port, db):
     conn.close()
     return cols
 
-prod_cols = get_columns(5433, "prod")
-sandbox_cols = get_columns(5434, "sandbox")
-
-print("prod:", sorted(prod_cols))
-print("sandbox:", sorted(sandbox_cols))
-print("only in prod:", sorted(prod_cols - sandbox_cols))
-print("only in sandbox:", sorted(sandbox_cols - prod_cols))
-
-if prod_cols == sandbox_cols:
-    print("status: no drift")
-else:
-    print("status: drift found")
+if __name__ == "__main__":
+    prod_cols = get_columns(5433, "prod")
+    sandbox_cols = get_columns(5434, "sandbox")
+    print("prod:", sorted(prod_cols))
+    print("sandbox:", sorted(sandbox_cols))
+    print("only in prod:", sorted(prod_cols - sandbox_cols))
+    print("only in sandbox:", sorted(sandbox_cols - prod_cols))
+    print("status: drift found" if prod_cols != sandbox_cols else "status: no drift")
