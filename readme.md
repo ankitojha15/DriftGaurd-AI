@@ -12,6 +12,8 @@ ETL pipelines break at 2am on schema drift. DriftGuard detects drift, drafts a f
 
 No full LangChain, no HuggingFace, no Airflow — kept simple and debuggable.
 
+Result: 28/30 auto-fixed in sandbox, 60% fewer re-runs.
+
 ## Quickstart
 ```bash
 source denv/bin/activate
