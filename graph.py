@@ -16,10 +16,16 @@ def detect(state: State):
     return state
 
 def draft(state: State):
+    if state["prod"] == state["exp"]:
+        state["sql"] = "-- no drift, no fix needed"
+        return state
     state["sql"] = get_fix(state["prod"], state["exp"])
     return state
 
 def check(state: State):
+    if state["sql"].startswith("-- no drift"):
+        state["status"] = "no drift"
+        return state
     state["status"] = run_test(state["sql"], 5433, "prod")
     return state
 
