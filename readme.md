@@ -4,24 +4,21 @@ ETL pipelines break at 2am on schema drift. DriftGuard detects drift, drafts a f
 
 ## Stack
 - **LangGraph** — orchestrates detect -> draft -> test -> approve -> apply
-- **Groq `llama-3.3-70b-versatile` (free)** — drafts only the fix SQL, not the full ETL
-- **Postgres x2 (Docker)** — `prod:5433` (real), `sandbox:5434` (test copy)
-- **psycopg2** — Python to Postgres connector
-- **Streamlit** — human approve / reject UI
-- **Pydantic + python-dotenv** — structured output + safe API key
-
-No full LangChain, no HuggingFace, no Airflow — kept simple and debuggable.
+- **LangChain + Groq `openai/gpt-oss-120b` (free)** — drafts only the fix SQL
+- **Postgres x2** — Docker `prod:5433` / `sandbox:5434` local, Neon `prod` / `sandbox` live
+- **FastAPI** — `POST /detect` (suggest), `POST /approve` (apply with backup)
+- **Streamlit** — beautiful approve UI, calls live API
+- **psycopg2 + dotenv** — DB wire + safe keys
 
 
 ## Quickstart
 ```bash
 source denv/bin/activate
 pip install -r requirements.txt
-docker compose up -d
 
 ## Live
 - API: https://driftgaurd-ai.onrender.com/docs
-- UI: Streamlit calls live API (Run Check -> Approve)
+- UI: https://driftgaurd-ai-night-guard.streamlit.app/
 
 ## Night-Guard Flow
 Slack (alert) -> FastAPI (brain) -> Streamlit (finger). Model is stateless, state in Postgres.
