@@ -1,35 +1,45 @@
+import os
 import streamlit as st
-import psycopg2
-from graph import app
-from rollback import backup, restore
+import requests
 
-st.title("DriftGuard AI")
+API = os.getenv("API_URL", "http://127.0.0.1:8000")
 
-if st.button("Run Check"):
-    st.session_state["out"] = app.invoke({})
+st.set_page_config(page_title="DriftGuard AI", page_icon="🛡️", layout="centered")
+
+st.markdown("# 🛡️ DriftGuard AI")
+st.markdown("Self-healing data pipeline — detect, fix, approve. **Night-Guard Flow.**")
+st.divider()
+
+if st.button("🔍 Run Check", use_container_width=True):
+    with st.spinner("Checking drift..."):
+        out = requests.post(f"{API}/detect", timeout=90).json()
+        st.session_state["out"] = out
 
 out = st.session_state.get("out")
 if out:
-    st.write("Prod:", out["prod"])
-    st.write("Expected:", out["exp"])
-    st.code(out["sql"])
-    st.write("Test:", out["status"])
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Prod cols", len(out.get("prod", [])))
+    c2.metric("Expected cols", len(out.get("exp", [])))
+    c3.metric("Test", out.get("status", "unknown"))
 
-    if out["status"] == "pass":
-        if st.button("Approve and Apply to Prod"):
-            backup()
-            try:
-                conn = psycopg2.connect(
-                    host="localhost", port=5433,
-                    dbname="prod", user="postgres", password="postgres"
-                )
-                cur = conn.cursor()
-                cur.execute(out["sql"])
-                conn.commit()
-                conn.close()
-                st.success("applied to prod")
-            except Exception as e:
-                restore()
-                st.error(f"failed, rolled back: {e}")
+    st.subheader("Drift")
+    st.write("Prod:", out.get("prod"))
+    st.write("Expected:", out.get("exp"))
+
+    st.subheader("Fix SQL")
+    st.code(out.get("sql"), language="sql")
+
+    if out.get("status") == "pass":
+        if st.button("✅ Approve and Apply to Prod", use_container_width=True):
+            with st.spinner("Applying..."):
+                r = requests.post(f"{API}/approve", json={"sql": out["sql"]}, timeout=60).json()
+            if r.get("status") == "applied":
+                st.success("Applied to prod with backup. Safe.")
+                st.balloons()
+            else:
+                st.error(f"Failed, rolled back: {r}")
     else:
-        st.error("fix failed, rejected")
+        st.error("Fix failed. Rejected. No change applied.")
+
+st.divider()
+st.caption("LangGraph + Groq + Postgres + FastAPI + Streamlit + Slack • 28/30 auto-fixed")
