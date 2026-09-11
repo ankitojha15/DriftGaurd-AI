@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import requests
 
-API = os.getenv("API_URL", "http://127.0.0.1:8000")
+API = st.secrets.get("API_URL", os.getenv("API_URL", "http://127.0.0.1:8000")).rstrip("/")
 
 st.set_page_config(page_title="DriftGuard AI", page_icon="🛡️", layout="centered")
 
@@ -12,8 +12,13 @@ st.divider()
 
 if st.button("🔍 Run Check", use_container_width=True):
     with st.spinner("Checking drift..."):
-        out = requests.post(f"{API}/detect", timeout=90).json()
-        st.session_state["out"] = out
+        try:
+            r = requests.post(f"{API}/detect", timeout=90)
+            r.raise_for_status()
+            st.session_state["out"] = r.json()
+        except Exception as e:
+            st.error(f"API not reachable: {API}. Open API /docs once, check Secrets. ({e})")
+            st.stop()
 
 out = st.session_state.get("out")
 if out:
