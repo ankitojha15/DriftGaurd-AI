@@ -12,10 +12,23 @@ ETL pipelines break at 2am on schema drift. DriftGuard detects drift, drafts a f
 
 No full LangChain, no HuggingFace, no Airflow — kept simple and debuggable.
 
-Result: 28/30 auto-fixed in sandbox, 60% fewer re-runs.
 
 ## Quickstart
 ```bash
 source denv/bin/activate
 pip install -r requirements.txt
 docker compose up -d
+
+## Live
+- API: https://driftgaurd-ai.onrender.com/docs
+- UI: Streamlit calls live API (Run Check -> Approve)
+
+## Night-Guard Flow
+Slack (alert) -> FastAPI (brain) -> Streamlit (finger). Model is stateless, state in Postgres.
+
+- `POST /detect` returns drift + fix + pass/fail (no apply)
+- `POST /approve` backs up then applies, rolls back on fail
+- Cron hits `/detect` daily at 02:00, Slack pings on drift
+
+## Result
+28/30 auto-fixed in sandbox, 60% fewer re-runs.
