@@ -8,10 +8,15 @@ def run_test(sql, port, db):
     cur = conn.cursor()
     try:
         cur.execute(sql)
-        rows = cur.fetchall()
-        print(f"rows: {len(rows)}")
+        if sql.strip().upper().startswith("SELECT"):
+            rows = cur.fetchall()
+            print(f"rows: {len(rows)}")
+        else:
+            print("ddl ok")
+        conn.rollback()
         return "pass"
     except Exception as e:
+        conn.rollback()
         print(e)
         return "fail"
     finally:
